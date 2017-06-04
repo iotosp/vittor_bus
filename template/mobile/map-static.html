@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+	<title>车辆位置</title>
+	<style>
+		body,#amap-map{
+			margin:0;
+			height:100%;
+			width:100%;
+			font-size:12px;
+		}
+	</style>
+	<!--jquery-->
+	<script src="http://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<!--高德-->
+	<link rel="stylesheet" href="http://cache.amap.com/lbs/static/main.css?v=1.0?v=1.0" />
+	<script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+	<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key={$map_amap_web_key}"></script>
+	<script>
+		var map;
+		var marker;
+		function init() {
+			//初始化地图
+			map = new AMap.Map("amap-map", {
+				zoom: 15,
+				center:[{$return_info['longitude']},{$return_info['latitude']}],
+			});
+			//生成点
+			marker = new AMap.Marker({
+				map:map,
+				position:[{$return_info['longitude']},{$return_info['latitude']}]
+			})
+			//生成实时路况
+			//var trafficLayer = new AMap.TileLayer.Traffic(true,15);
+			//trafficLayer.setMap(map);
+			// 实例化3D楼块图层
+			//var buildings = new AMap.Buildings();
+			//buildings.setMap(map);
+			//卫星地图
+			//var wxdt = new AMap.TileLayer.Satellite()
+			//wxdt.setMap(map);
+			//1s后执行
+			setTimeout("getGps()",1000);
+		}
+		//循环获取信息
+		function getGps(){
+			$.getJSON("{php echo $this->createMobileUrl('GetMap').'&state=1&login_openid=syzcs'}", function(data){
+				console.log(data);
+				if(data.state=="ok"){
+					//删除所有点
+					map.remove(marker);
+					//生成新的点
+					marker = new AMap.Marker({
+						resizeEnable:true,
+						map:map,
+						position:[data.longitude,data.latitude]
+					})
+					$('.plate-num').html(data.plate_num);
+					$('.speed').html(data.speed+"公里/小时");
+					//平移
+					map.panTo([data.longitude,data.latitude]);
+				}
+			});
+			setTimeout("getGps()",5000);
+		}
+	</script>
+</head>
+<body onload="init()">
+	<!--超速报警-->
+	{if $return_info['plate_num']=='沈阳站1号拖车'}
+	<audio controls="controls" id="alarm-audio" hidden>
+		<source src="http://vittor.cn/alarm.wav" type="audio/wav">
+		<source src="http://vittor.cn/alarm.mp3" type="audio/mp3">
+	</audio>
+	{/if}
+	<div id="amap-map" ></div>
+	<div class='button-group'> 
+		<font class="plate-num">{$return_info['plate_num']}</font>
+		<br/>
+		<font class="speed">{$return_info['speed']}公里/小时</font>
+		<br/>
+	</div>
+</body>
+</html>

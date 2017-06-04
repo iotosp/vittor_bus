@@ -1,0 +1,185 @@
+{template 'common/header'}
+<div class="main">
+	<ul class="nav nav-tabs">
+		<li><a href="{php echo $this->createWebUrl('Manager')}">班车管理</a></li>
+		<li  class="active" ><a href="{php echo $this->createWebUrl('CompanyManager')}">企业/分组管理</a></li>
+		<li><a href="{php echo $this->createWebUrl('AccessManager')}">接入信息管理</a></li>
+	</ul>
+	<div class="alert {if empty($state)}alert-danger{else}alert-success{/if}" role="alert">{php echo $text;}</div>
+	<div>
+		<button type="button" class="btn btn-default" onclick="showAuto('add-company')">添加企业/分组</button>
+		<div class="panel panel-default" id='add-company' hidden>
+			<div class="panel-heading">添加企业/分组</div>
+			<div class="panel-body">
+				<div class="panel-body">
+					<form action="{php echo $this->createWebUrl('CompanyManager')}" method='post'>
+						<input type="hidden" name='type' value="addcompany" />
+						<div class="form-group">
+							<label for="name">企业/分组名称</label>
+							<input type="text" class="form-control" id="name" name="name" placeholder="企业/分组名称">
+						</div>
+						<div class="form-group">
+							<label for="state">企业/分组状态</label>
+							<br/>
+							<label>
+								<input type="radio" name="state" id="state1" value="1">启用&nbsp;&nbsp;
+							</label>
+							
+							<label>
+								<input type="radio" name="state" id="state0" value="0" checked>禁用&nbsp;&nbsp;
+							</label>
+						</div>
+						<div class="form-group">
+							<label for="is-check">是否需要打卡</label>
+							<br/>
+							<label  onclick="show('t','clock-in')">
+								<input type="radio" name="is-check" id="is-check1" value="1">是&nbsp;&nbsp;
+							</label>
+							<label  onclick="show('clock-in','t')">
+								<input type="radio" name="is-check" id="is-check0" value="0" checked>否&nbsp;
+							</label>
+						</div>
+						<div id="clock-in" hidden>
+							<div class="form-group">
+								<label for="check-longitude">打卡经度</label>
+								<input type="text" class="form-control" id="check-longitude" name="check-longitude" placeholder="打卡经度">
+							</div>
+							<div class="form-group">
+								<label for="check-latitude">打卡纬度</label>
+								<input type="text" class="form-control" id="check-latitude" name="check-latitude" placeholder="打卡维度">
+							</div>
+							<div class="form-group">
+								<label for="check-longitude-error">打卡经度误差</label>
+								<input type="text" class="form-control" id="check-longitude-error" name="check-longitude-error" placeholder="打卡经度误差">
+							</div>
+							<div class="form-group">
+								<label for="check-latitude-error">打卡纬度误差</label>
+								<input type="text" class="form-control" id="check-latitude-error" name="check-latitude-error" placeholder="打卡纬度误差">
+							</div>
+							<div class="form-group">
+								<label for="check-start-time">打卡开始时间</label>
+								<input type="text" class="form-control" id="check-start-time" name="check-start-time" placeholder="打卡开始时间">
+							</div>
+							<div class="form-group">
+								<label for="check-stop-time">打卡结束时间</label>
+								<input type="text" class="form-control" id="check-stop-time" name="check-stop-time" placeholder="打卡结束时间">
+							</div>
+						</div>
+						<button type="submit" class="btn btn-default">添加</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="padding:15px;">
+		<table class="table table-hover">
+			<thead class="navbar-inner">
+				<tr>
+					<th>企业/分组名称</th>
+					<th>企业/分组状态(0->禁用/1->正常)</th>
+					<th>是否需要打卡(0->否/1->是)</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{loop $company_info_request_arr['company_info'] $company_info}
+				<tr>
+					<td>{$company_info['name']}</td>
+					<td>{$company_info['state']}</td>
+					<td>{$company_info['is_check']}</td>
+					<td>
+						<a class="btn btn-small" data-toggle="modal" data-target="#change-{$company_info['company_id']}">编辑</a>
+					</td>
+				</tr>
+				<div class="modal fade" id="change-{$company_info['company_id']}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="panel-default">
+								<div class="panel-heading">添加企业/分组</div>
+								<form action="{php echo $this->createWebUrl('CompanyManager')}" method='post'>
+									<input type="hidden" name='type' value="changecompany" />
+									<input type="hidden" name='company_id' value="{$company_info['company_id']}" />
+									<div class="panel-body">
+										<div class="panel-body">
+											<div class="form-group">
+												<label for="name">企业/分组名称</label>
+												<input type="text" class="form-control" id="name" name="name" placeholder="企业/分组名称" value="{$company_info['name']}">
+											</div>
+											<div class="form-group">
+												<label for="state">企业/分组状态</label>
+												<br/>
+												<label>
+													<input type="radio" name="state" id="state1" value="1" {if $company_info['state']=='1'}checked{/if}>启用&nbsp;&nbsp;
+												</label>
+												<label>
+													<input type="radio" name="state" id="state0" value="0" {if $company_info['state']=='0'}checked{/if}>禁用&nbsp;&nbsp;
+												</label>
+											</div>
+											<div class="form-group">
+												<label for="is-check">是否需要打卡</label>
+												<br/>
+												<label  onclick="show('t','change-{$company_info['company_id']}-clock-in')">
+													<input type="radio" name="is-check" id="is-check1" value="1"  {if $company_info['is_check']=='1'}checked{/if}>是&nbsp;&nbsp;
+												</label>
+												<label  onclick="show('change-{$company_info['company_id']}-clock-in','t')">
+													<input type="radio" name="is-check" id="is-check0" value="0"  {if $company_info['is_check']=='0'}checked{/if}>否&nbsp;
+												</label>
+											</div>
+											<div id="change-{$company_info['company_id']}-clock-in" {if $company_info['is_check']=='0'}hidden{/if}>
+												<div class="form-group">
+													<label for="check-longitude">打卡经度</label>
+													<input type="text" class="form-control" id="check-longitude" name="check-longitude" placeholder="打卡经度" value="{$company_info['check_longitude']}">
+												</div>
+												<div class="form-group">
+													<label for="check-latitude">打卡纬度</label>
+													<input type="text" class="form-control" id="check-latitude" name="check-latitude" placeholder="打卡维度" value="{$company_info['check_latitude']}">
+												</div>
+												<div class="form-group">
+													<label for="check-longitude-error">打卡经度误差</label>
+													<input type="text" class="form-control" id="check-longitude-error" name="check-longitude-error" placeholder="打卡经度误差" value="{$company_info['check_longitude_error']}">
+												</div>
+												<div class="form-group">
+													<label for="check-latitude-error">打卡纬度误差</label>
+													<input type="text" class="form-control" id="check-latitude-error" name="check-latitude-error" placeholder="打卡纬度误差" value="{$company_info['check_latitude_error']}">
+												</div>
+												<div class="form-group">
+													<label for="check-start-time">打卡开始时间</label>
+													<input type="text" class="form-control" id="check-start-time" name="check-start-time" placeholder="打卡开始时间" value="{$company_info['check_start_time']}">
+												</div>
+												<div class="form-group">
+													<label for="check-stop-time">打卡结束时间</label>
+													<input type="text" class="form-control" id="check-stop-time" name="check-stop-time" placeholder="打卡结束时间" value="{$company_info['check_stop_time']}">
+												</div>
+											</div>
+											<button type="submit" class="btn btn-default">修改</button>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/loop}
+			</tbody>
+		</table>
+		{$pager}
+	</div>
+	<script type="text/javascript"> 
+		function show(hidden,show){
+			if(hidden!='t'){
+				$("#"+hidden).slideUp('slow');
+			}
+			if(show!='t'){
+				$("#"+show).slideDown('slow');
+			}
+		}
+		//int direction 0/1 垂直滑动/横向滑动
+		function showAuto(show,direction=0){
+			if(direction==0){
+				$("#"+show).slideToggle('slow');
+			}else if(direction==1){
+				$("#"+show).animate({width:'toggle'});
+			}
+		}
+	</script>
+</div>

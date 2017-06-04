@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://www.we7.cc" versionCode="0.6">
+	<application setting="false">
+		<name><![CDATA[班车查询]]></name>
+		<identifie><![CDATA[vittor_bus]]></identifie>
+		<version><![CDATA[0.1]]></version>
+		<type><![CDATA[business]]></type>
+		<ability><![CDATA[班车定位信息查询]]></ability>
+		<description><![CDATA[查询当前班车行进位置，方便上班一族]]></description>
+		<author><![CDATA[微拓科技]]></author>
+		<url><![CDATA[]]></url>
+	</application>
+	<platform>
+		<subscribes>
+			<message type="trace" />
+		</subscribes>
+		<handles>
+			<message type="text" />
+			<message type="location" />
+			<message type="trace" />
+		</handles>
+		<rule embed="true" />
+	</platform>
+	<bindings>
+		<menu>
+			<entry title="班车信息管理" do="Manager"  />
+			<entry title="班车统计信息下载" do="Information"  />
+		</menu>
+		<cover>
+		</cover>
+	</bindings>
+	<install><![CDATA[install.php]]></install>
+	<uninstall><![CDATA[]]></uninstall>
+	<upgrade><![CDATA[upgrade.php]]></upgrade>
+</manifest>

@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+	<title>车辆历史记录查询位置</title>
+	<!--bootstrap-->
+	<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet">
+	<!--datetimepicker-->
+	<link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+	<!--jquery-->
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<!--bootstrap-->
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!--datetimepicker-->
+	<script src="https://cdn.bootcss.com/moment.js/2.18.1/moment.min.js"></script>
+	<script src="https://cdn.bootcss.com/moment.js/2.18.1/locale/zh-cn.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+	<!--高德-->
+	<link rel="stylesheet" href="http://cache.amap.com/lbs/static/main.css?v=1.0?v=1.0" />
+	<script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+	<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key={$map_amap_web_key}"></script>
+</head>
+<body>
+	<!--选择器部分-->
+	<div>
+		<div class="collapse" id="collapseExample">
+			<div>
+				请选择要查询的车辆:<br/>
+				<div class="dropdown bus-list">
+					<button class="form-control" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<font class="plate-num">请选择车辆</font>
+					<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+							<li role="separator" class="divider"></li>
+							{loop $dev_list $info}
+							<li><a onclick="set_bus_id('{php echo $info['id']}','{php echo $info['plate_num']}')">{php echo $info['plate_num']}{if $info['state'] == '0'}(设备已停用){/if}  {php echo $info['route_num']}号路线</a></li>
+							<li role="separator" class="divider"></li>
+							{/loop}
+					</ul>
+				</div>
+				<br/>
+				请选择要查询的日期:<br/>
+				<div class="date-container">
+					<div class="row">
+						<div>
+							<input type='text' class="form-control" id='datetimepicker-start' />
+						</div>
+					</div>
+				</div>
+				<script>
+					$(function () {
+								var datetimepicker_start=$('#datetimepicker-start');
+								datetimepicker_start.datetimepicker({
+																	format: 'YYYY-MM-DD',
+																	minDate: moment().subtract(90, 'days').format('YYYY-MM-DD'),
+																	maxDate: new Date()
+																	});
+								if(ismobile(1)==1){
+									datetimepicker_start.attr('type','button');
+								}
+							});
+					/**
+					 * 判断平台
+					 * @参数 0:iPhone    1:Android
+					 * @返回值 0:不是该平台 1:是该平台
+					 */
+					function ismobile(test){
+						var u = navigator.userAgent, app = navigator.appVersion;
+						if(/AppleWebKit.*Mobile/i.test(navigator.userAgent) || (/MIDP|SymbianOS|NOKIA|SAMSUNG|LG|NEC|TCL|Alcatel|BIRD|DBTEL|Dopod|PHILIPS|HAIER|LENOVO|MOT-|Nokia|SonyEricsson|SIE-|Amoi|ZTE/.test(navigator.userAgent))){
+							if(window.location.href.indexOf("?mobile")<0){
+								try{
+									if(/iPhone|mac|iPod|iPad/i.test(navigator.userAgent)){
+									return '0';
+									}else{
+									return '1';
+									}
+								}catch(e){}
+							}
+						}else if( u.indexOf('iPad') > -1){
+							return '0';
+						}else{
+							return '1';
+						}
+					};
+					
+				</script>
+				<br/>
+				<button type="button" class="btn btn-primary btn-lg btn-block" onclick="query_submit()">确认</button>
+			</div>
+		</div>
+	</div>
+	<!--地图容器-->
+	<div id="amap-map" >
+	</div>
+	<div class='button-group'> 
+		<font class="plate-num">车牌号码未选择</font>
+		<br/>
+		<font class="locations-time">时间未选择</font>
+		<br/>
+		<font class="locations-count">距离未计算</font>
+		<br/>
+		<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+			<span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> 选择信息
+		</button>
+	</div>
+	<script>
+		//实例化地图
+		var map = new AMap.Map('amap-map', {
+			resizeEnable: true,
+			zoom:8,
+		});
+		//添加工具条
+		map.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView'],function(){
+																			map.addControl(new AMap.ToolBar());
+																			map.addControl(new AMap.Geolocation);
+																			});
+		//更改高德logo链接
+		$(".amap-logo").attr("href","#"); 
+		//保存设备ID
+		var bus_id;
+		//保存车牌号码
+		var bus_num;
+		function set_bus_id(bus_id_value,bus_num_value){
+			$(".bus-list .plate-num").html(bus_num_value);
+			bus_num=bus_num_value;
+			bus_id=bus_id_value;
+		}
+		//保存开始时间
+		var start_time;
+		var start_time_timestamp
+		function set_start_time(){
+			var temp=$(".date-container input").val();
+			start_time=moment(temp).format('YYYY年MM月DD日');
+			start_time_timestamp=moment(temp).format('X');
+		}
+		//地图折线对象
+		var polyline
+		//提交信息
+		function query_submit(){
+			set_start_time();
+			if(!bus_id){
+				alert("请选择车辆!");
+			}else{
+				$('#collapseExample').collapse('hide');
+				$('.button-group .plate-num , .button-group .locations-time , .button-group .locations-count').html("信息加载中,请稍等...");
+				$.getJSON("{php echo $this->createMobileUrl('GetDeviceLocations')}&bus_id="+bus_id+"&start_time="+start_time_timestamp, function(data){
+					if(data.state=="ok"){
+						var gps_list=data.gps_list;
+						//声明二维数组
+						var gps_list_arr=new Array();
+						console.log(gps_list[0]["amap_longitude"]);
+						for(var a=0;a<gps_list.length;a++){
+							gps_list_arr[a]=new Array();
+							gps_list_arr[a][0]=gps_list[a]["amap_longitude"];
+							gps_list_arr[a][1]=gps_list[a]["amap_latitude"];
+						}
+						console.log(gps_list_arr);
+						if(!polyline){
+							polyline = new AMap.Polyline({
+								path: gps_list_arr,			//设置线覆盖物路径
+								strokeColor: "#3366FF",		//线颜色
+								strokeOpacity: 1,			//线透明度
+								strokeWeight: 5,			//线宽
+								strokeStyle: "solid",		//线样式
+								lineJoin: "round",
+								showDir: "true",
+							});
+						}else{
+							polyline.hide();
+							polyline = new AMap.Polyline({
+								path: gps_list_arr,			//设置线覆盖物路径
+								strokeColor: "#3366FF",		//线颜色
+								strokeOpacity: 1,			//线透明度
+								strokeWeight: 5,			//线宽
+								strokeStyle: "solid",		//线样式
+								lineJoin: "round",
+								showDir: "true",
+							});
+						}
+						polyline.setMap(map);
+						$('.button-group .plate-num').html(bus_num);
+						$('.button-group .locations-time').html(start_time);
+						$('.button-group .locations-count').html("行驶距离:"+(polyline.getLength()/1000).toFixed(3)+"公里(参考值)");
+						//移除所有标记点
+						map.remove(locations_markers);
+						//自适应屏幕
+						map.setFitView(polyline);
+					}else{
+						$('.button-group .plate-num , .button-group .locations-time , .button-group .locations-count').html("信息查询失败,请重试!");
+						alert(data.text);
+					}
+				});
+			}
+		}
+		//储存所有标记点
+		var locations_markers = [];
+		{php $i=0;}
+		{loop $last_locations['gps_list'] $info}
+			//生成新的点
+			locations_markers[{$i}] = new AMap.Marker({
+				//resizeEnable:true,
+				map: map,
+				position:[{$info['amap_longitude']},{$info['amap_latitude']}],
+				{if (time()-$info['lochtion_time'])>60 or $info['speed']=='0'}
+				 icon: "http://webapi.amap.com/theme/v1.3/markers/n/mark_r.png",
+				{/if}
+			});
+			//点击时打开
+			AMap.event.addListener(locations_markers[{$i}], 'click', function() {
+				infoWindow_{$i}.open(map, locations_markers[{$i}].getPosition())
+			});
+			infoWindow_{$i} = new AMap.InfoWindow({
+				isCustom: false,  //使用自定义窗体
+				content: 	'<p class="my-desc"><strong>车牌号码:{$info['plate_num']}</strong><br/>'+
+							'路线:{$info['route']}<br/>'+
+							'{if (time()-$info['lochtion_time'])>60 or $info['speed']=='0'}当前车辆已静止{else}当前车速:{$info['speed']}{/if}<br/>'+
+							'</p>',
+				offset: new AMap.Pixel(0, -31)
+			});
+			{php $i++;}
+		{/loop}
+		//自适应
+		setTimeout("map.setFitView(locations_markers);",1) 
+	</script>
+		<style>
+		.row {
+			margin: 0 0 0 0;
+		}
+		.button-group .plate-num , .button-group .locations-time , .button-group .locations-count {
+			background-color:#000;
+			color:#fff;
+		}
+		.button-group{
+			left:0;
+		}
+		body{
+			height:100%;
+			width:100%;
+		}
+		
+		#amap-map{
+			height:100%;
+			width:100%;
+		}
+	</style>
+</body>
+</html>

@@ -1,0 +1,32 @@
+﻿{template 'common/header'}
+<div class="main">
+	
+	<div style="padding:15px;">
+		<form action="" class="form-horizontal form" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="id" value="{$_GPC['id']}">
+		<input type="hidden" name="name" value="bus">
+		<table class="table table-hover">
+			
+			<tbody>
+				{loop $list $item}
+					<div class="col-sm-9 col-xs-12">
+							<label for="radio_1" class="radio-inline">
+							<input type="radio" name="plate_num" value="{php echo $item['plate_num']}" id="isshow2"  {if $reply['type'] == 1}checked="true"{/if} /> {php echo $item['plate_num']}</label>
+					</div>
+				{/loop}
+				<div class="col-sm-9 col-xs-12">
+						<label for="radio_1" class="radio-inline">
+						<input type="radio" name="plate_num" value="01" id="isshow2"  {if $reply['type'] == 1}checked="true"{/if} />未安装设备车辆</label>
+						
+				</div>
+			</tbody>
+			<tr>
+				<td colspan="6">
+					<button type="submit" class="btn btn-primary span3" name="submit" value="提交">提交</button>
+					<input type="hidden" name="token" value="{$_W['token']}" />
+				</td>
+			</tr>
+		</table>
+		
+	</div>
+</div>

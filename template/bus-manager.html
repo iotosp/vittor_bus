@@ -1,0 +1,179 @@
+{template 'common/header'}
+<div class="main">
+	<ul class="nav nav-tabs">
+		<li class="active" ><a href="{php echo $this->createWebUrl(Manager)}">班车管理</a></li>
+		<li><a href="{php echo $this->createWebUrl('CompanyManager')}">企业/分组管理</a></li>
+		<li><a href="{php echo $this->createWebUrl('AccessManager')}">接入信息管理</a></li>
+	</ul>
+	<div>
+		<div class="alert {if empty($state)}alert-danger{else}alert-success{/if}" role="alert">{php echo $text;}</div>
+		<div class="dropdown">
+			<button class="btn btn-default dropdown-toggle" type="button" id="selsect-company" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				{if !isset($company_name)}选择企业/分组{else}{$company_name}{/if}
+			<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="selsect-company">
+			<li role="separator" class="divider"></li>
+			{loop $request_arr['company_info'] $value}
+				<li><a href="{php echo $this->createWebUrl('Manager')}&type=addcompany&company-id={$value['company_id']}&company-name={$value['name']}">{$value['name']}</a></li>
+				<li role="separator" class="divider"></li>
+			{/loop}
+			</ul>
+			<button type="button" class="btn btn-default" onclick="{if !empty($company_id)}showAuto('add-bus'){else}alert('请先选择企业/分组'){/if}">添加班车</button>
+		</div>
+	</div>
+	{if !empty($company_id)}
+	<div class="panel panel-default" id='add-bus' hidden>
+		<div class="panel-heading">添加企业/分组</div>
+			<div class="panel-body">
+				<div class="panel-body">
+					<form action="{php echo $this->createWebUrl('Manager')}" method='post'>
+						<input type="hidden" name='type' value="addbus" />
+						<input type="hidden" name='company-id' value="{$company_id}" />
+						<input type="hidden" name='company-name' value="{$company_name}" />
+						<div class="form-group">
+							<label for="imei">设备IMEI</label>
+							<input type="text" class="form-control" id="imei" name="imei" placeholder="设备上的16位唯一识别码例如：0358911020137762">
+						</div>
+						<div class="form-group">
+							<label for="route">班车路线</label>
+							<input type="text" class="form-control" id="route" name="route" placeholder="班车路过站点例如：沈辽路云峰街-铁西广场-铁西宜家-粮校-万科四季花城-北美家园-沈阳航空航天大学">
+						</div>
+						<div class="form-group">
+							<label for="route-num">路线编码</label>
+							<input type="text" class="form-control" id="route-num" name="route-num" placeholder="班车的线路编号例如：1">
+						</div>
+						<div class="form-group">
+							<label for="plate-num">车牌号码</label>
+							<input type="text" class="form-control" id="plate-num" name="plate-num" placeholder="例如:辽A1234578">
+						</div>
+						<div class="form-group">
+							<label for="phone-num">SIM卡号码</label>
+							<input type="text" class="form-control" id="phone-num" name="phone-num" placeholder="设备的电话卡号">
+						</div>
+						<div class="form-group">
+							<label for="state">班车状态</label>
+							<br/>
+							<label>
+								<input type="radio" name="state" id="state1" value="1">启用&nbsp;&nbsp;
+							</label>
+							
+							<label>
+								<input type="radio" name="state" id="state0" value="0" checked>禁用&nbsp;&nbsp;
+							</label>
+						</div>
+						<button type="submit" class="btn btn-default">添加</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="padding:15px;">
+		<table class="table table-hover">
+			<thead class="navbar-inner">
+				<tr>
+					<th style="width:5%;">路线编码</th>
+					<th style="width:15%;">班车线路</th>
+					<th style="width:10%;">车牌号</th>
+					<th style="width:10%;">设备IMEI</th>
+					<th style="width:10%">状态(0->禁用/1->正常)</th>
+					<th style="width:10%">定位设备手机号</th>
+					<th style="width:10%">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				{loop $bus_info_arr['bus_info'] $value}
+				<tr>
+					<td>{$value['route_num']}</td>
+					<td>{$value['route']}</td>
+					<td>{$value['plate_num']}</td>
+					<td>{$value['imei']}</td>
+					<td>{$value['state']}</td>
+					<td>{$value['phone_num']}</td>
+					<td>
+						<a class="btn btn-small" data-toggle="modal" data-target="#change-{$value['imei']}"><i class="icon-search"></i>编辑</a>
+					</td>
+				</tr>
+				<div class="modal fade" id="change-{$value['imei']}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="panel-default">
+								<div class="panel-heading">修改班车信息</div>
+								<form action="{php echo $this->createWebUrl('Manager')}" method='post'>
+									<input type="hidden" name='type' value="changebus" />
+									<input type="hidden" name='imei' value="{$value['imei']}" />
+									<input type="hidden" name='now-company-id' value="{$company_id}" />
+									<input type="hidden" name='company-name' value="{$company_name}" />
+									<div class="panel-body">
+										<div class="panel-body">
+											<div class="form-group">
+												<label>所属企业\分组</label> 
+												<select name="company-id" class="form-control" value=""> 
+													{loop $request_arr['company_info'] $value1}
+														<option value="{$value1['company_id']}">{$value1['name']}</option> 
+													{/loop}
+												</select>
+												<script>
+													$("#change-{$value['imei']} option[value='{$company_id}']").attr("selected",true);
+												</script>
+											</div>
+											<div class="form-group">
+												<label for="route">班车路线</label>
+												<input type="text" class="form-control" id="route" name="route" placeholder="班车路线" value="{$value['route']}">
+											</div>
+											<div class="form-group">
+												<label for="route-num">路线编码</label>
+												<input type="text" class="form-control" id="route-num" name="route-num" placeholder="路线编码" value="{$value['route_num']}">
+											</div>
+											<div class="form-group">
+												<label for="plate-num">车牌号码</label>
+												<input type="text" class="form-control" id="plate-num" name="plate-num" placeholder="车牌号码" value="{$value['plate_num']}">
+											</div>
+											<div class="form-group">
+												<label for="phone-num">SIM卡号码</label>
+												<input type="text" class="form-control" id="phone-num" name="phone-num" placeholder="SIM卡号码" value="{$value['phone_num']}">
+											</div>
+											<div class="form-group">
+												<label for="state">班车状态</label>
+												<br/>
+												<label>
+													<input type="radio" name="state" id="state1" value="1" {if $value['state']=='1'}checked{/if}>启用&nbsp;&nbsp;
+												</label>
+												
+												<label>
+													<input type="radio" name="state" id="state0" value="0" {if $value['state']=='0'}checked{/if}>禁用&nbsp;&nbsp;
+												</label>
+											</div>
+											<button type="submit" class="btn btn-default">修改</button>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/loop}
+			</tbody>
+		</table>
+		{$pager}
+	</div>
+	{/if}
+	<script type="text/javascript"> 
+		function show(hidden,show){
+			if(hidden!='t'){
+				$("#"+hidden).slideUp('slow');
+			}
+			if(show!='t'){
+				$("#"+show).slideDown('slow');
+			}
+		}
+		//int direction 0/1 垂直滑动/横向滑动
+		function showAuto(show,direction=0){
+			if(direction==0){
+				$("#"+show).slideToggle('slow');
+			}else if(direction==1){
+				$("#"+show).animate({width:'toggle'});
+			}
+		}
+	</script>
+</div>

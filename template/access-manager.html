@@ -1,0 +1,116 @@
+{template 'common/header'}
+<div class="main">
+	<ul class="nav nav-tabs">
+		<li><a href="{php echo $this->createWebUrl('Manager')}">班车管理</a></li>
+		<li><a href="{php echo $this->createWebUrl('CompanyManager')}">企业/分组管理</a></li>
+		<li class="active" ><a href="{php echo $this->createWebUrl('AccessManager')}">接入信息管理</a></li>
+	</ul>
+	<div class="alert {if empty($state)}alert-danger{else if $state=='2'}alert alert-info{else}alert-success{/if}" role="alert">
+		{php echo $text;}
+		{if !empty($state)}
+			<button type="button" class="btn btn-default" onclick="showAuto('get-bdkey')">重新接入</button>
+			<button type="button" class="btn btn-default" onclick="showAuto('map-conf')">地图设置</button>
+		{/if}
+	</div>
+	<div class="access" id="access">
+		{if !empty($state)}
+			<div class="panel panel-default" id="map-conf" {if $state!='2'}hidden{/if}>
+				<div class="panel-heading">地图设置 <a href="http://lbs.amap.com/faq/top/notice/17/" target="_blank">高德KEY申请教程</a> <a href="http://jingyan.baidu.com/article/36d6ed1f69c2b51bcf488388.html">百度KEY申请教程</a></div>
+				<div class="panel-body">
+					<form action="{php echo $this->createWebUrl('AccessManager')}" method='post'>
+						<input type="hidden" name='type' value="mapconf" />
+						<div class="form-group">
+							<label for="bdcode">高德地图Web服务Key</label>
+							<input type="text" class="form-control" id="bdcode" name="amap-server" placeholder="高德地图Web服务Key" value="{$map_amap_server_key}">
+						</div>
+						<span class="label label-danger">用于坐标转换</span><br/><br/>
+						<div class="form-group">
+							<label for="bdcode">高德地图Web端Key</label>
+							<input type="text" class="form-control" id="bdcode" name="amap-web" placeholder="高德地图Web端Key" value="{$map_amap_web_key}">
+						</div>
+						<span class="label label-danger">用于地图显示</span><br/><br/>
+						<div class="form-group">
+							<label for="bdcode">百度地图服务端AK</label>
+							<input type="text" class="form-control" id="bdcode" name="baidu-server" placeholder="百度地图服务端Key" value="{$map_baidu_server_key}">
+						</div>
+						<span class="label label-danger">用于文字信息输出</span><br/><br/>
+						<button type="submit" class="btn btn-default">设置</button>
+						<input type="button" class="btn btn-default" value="取消" onclick="showAuto('map-conf')">
+					</form>
+				</div>
+			</div>
+		{/if}
+		<div class="panel panel-default" id='get-bdkey' {if !empty($state)}hidden{/if}>
+			<div class="panel-heading">服务接入</div>
+			<div class="panel-body">
+				<form action="{php echo $this->createWebUrl('AccessManager')}" method='post'>
+					<input type="hidden" name='type' value="getbdkey" />
+					<div class="form-group">
+						<label for="bdcode">账号</label>
+						<input type="text" class="form-control" id="bdcode" name="bdcode" placeholder="账号">
+					</div>
+					<div class="form-group">
+						<label for="bdpwd">密码</label>
+						<input type="password" class="form-control" id="bdpwd" name="bdpwd" placeholder="密码">
+					</div>
+					<span class="label label-danger">重新接入后,曾经生成过的bdkey将失效!</span><br/><br/>
+					<button type="submit" class="btn btn-default">接入</button>
+					<input type="button" class="btn btn-default" value="注册" onclick="show('get-bdkey','service-signup')">
+				</form>
+			</div>
+		</div>
+		<div class="panel panel-default" id='service-signup' hidden>
+			<div class="panel-heading">服务注册</div>
+			<div class="panel-body">
+				<div class="panel-body">
+					<form action="{php echo $this->createWebUrl('AccessManager')}" method='post'>
+						<input type="hidden" name='type' value="servicesignup" />
+						<div class="form-group">
+							<label for="bdcode">账号</label>
+							<input type="text" class="form-control" id="bdcode" name="bdcode" placeholder="账号">
+						</div>
+						<span class="label label-info">账号不可小于10位!</span><br/><br/>
+						<div class="form-group">
+							<label for="bdpwd">密码</label>
+							<input type="password" class="form-control" id="bdpwd" name="bdpwd" placeholder="密码">
+						</div>
+						<span class="label label-info">密码不可小于10位!</span><br/><br/>
+						<div class="form-group">
+							<label for="bdpwd">重新输入一遍密码</label>
+							<input type="password" class="form-control" id="bdpwd1" name="bdpwd1" placeholder="重新输入一遍密码">
+						</div>
+						<div class="form-group">
+							<label for="bdpwd">电子邮件</label>
+							<input type="email" class="form-control" id="email" name="email" placeholder="电子邮件">
+						</div>
+						<div class="form-group">
+							<label for="bdpwd">手机号码</label>
+							<input type="number" class="form-control" id="phone-num" name="phonenum" placeholder="手机号码">
+						</div>
+						<div class="form-group">
+							<label for="bdpwd">QQ</label>
+							<input type="number" class="form-control" id="qq" name="qq" placeholder="QQ">
+						</div>
+						<span class="label label-info">电子邮件、手机号码、QQ请至少填写一个,以便找回主体使用!</span><br/><br/>
+						<button type="submit" class="btn btn-default">注册</button>
+						<button type="button" class="btn btn-default" onclick="show('service-signup','get-bdkey')">返回接入</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript"> 
+		function show(hidden,show){
+			$("#"+hidden).slideUp('slow');
+			$("#"+show).slideDown('slow');
+		}
+		//int direction 0/1 垂直滑动/横向滑动
+		function showAuto(show,direction=0){
+			if(direction==0){
+				$("#"+show).slideToggle('slow');
+			}else if(direction==1){
+				$("#"+show).animate({width:'toggle'});
+			}
+		}
+	</script>
+</div>

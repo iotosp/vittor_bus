@@ -1,0 +1,68 @@
+{template 'common/header'}
+<style>
+.photo_list{padding:15px 0;}
+.photo_list .alert{width:auto; margin-top:10px; overflow:hidden;}
+.photo_list .photo_preview{width:130px;}
+.photo_list .photo_preview img{width:130px; margin-bottom:5px;}
+.photo_list .photo_preview label{padding:0;}
+.photo_list .photo_preview input[type="radio"]{margin-left:0; margin-right:10px;}
+.photo_list table{margin-left:40px;}
+.photo_list table th,.photo_list table td{padding-bottom:5px;}
+.photo_list table th{width:60px; font-size:14px;}
+.photo_list table input,.photo_list table select{margin-bottom:0;}
+</style>
+<div class="main">
+<ul class="nav nav-tabs">
+	<li class="active"><a href="{php echo $this->createWebUrl('manager')}">班车管理</a></li>
+	<li><a href="{php echo $this->createWebUrl('add')}">添加班车</a></li>
+</ul>
+<form action="" class="form-horizontal form" method="post" enctype="multipart/form-data">
+	<input type="hidden" name="id" value="{$_GPC['id']}">
+	<input type="hidden" name="name" value="bus">
+	<h4>班车基本信息</h4>
+	<table class="tb">
+		<tr>
+			<th>公司名称</th>
+			<td>
+				<input type="text" id="company" name="company" value="{$_GPC['company']}"  class="span5" />
+				<div class="help-block">请输入本公司名称</div>
+			</td>
+		</tr>
+		<tr>
+		  <th>班车路线名称/编号</th>
+			<td><input type="text" id="route" name="route" value="{$_GPC['route']}"  class="span5" /><div class="help-block">请输入班车名称，比如"皇姑区一号线"</div></td>
+		</tr>
+		<tr>
+		  <th>车牌号</th>
+			<td><input type="text" id="route" name="plate_num" value="{$_GPC['plate_num']}"  class="span5" /><div class="help-block">班车车牌号"</div></td>
+		</tr>
+		<tr>
+			<th>班车定位设备序列号</th>
+			<td>
+				<input type="text" name="imei" value="{$_GPC['imei']}"  class="span5" />
+				<div class="help-block">定位设备上的序列号，必填！否则无法实现定位</div>
+			</td>
+		</tr>
+		<tr>
+			<th>班车定位设备手机号</th>
+			<td>
+				<input type="text" name="phone_num" value="{$_GPC['phone_num']}"  class="span5" />
+				<div class="help-block">定位设备上的手机号，必填！否则无法实现定位</div>
+			</td>
+		</tr>
+		<tr>
+			<th></th>
+			<td>
+				<button type="submit" class="btn btn-primary span3" name="submit" value="提交">提交</button>
+				<input type="hidden" name="token" value="{$_W['token']}" />
+			</td>
+		</tr>
+		
+		
+		
+	</table>
+</form>
+
+
+
+{template 'common/footer'}
